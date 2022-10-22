@@ -1,0 +1,37 @@
+image: hashicorp/terraform:latest
+
+before_script:
+  - export TF_ROOT=${CI_PROJECT_DIR}/module
+  - cd ${TF_ROOT}
+
+stages:
+  - init-validate
+  - plan
+  - deploy
+
+initiate:
+  stage: init-validate
+  before_script:
+    - terraform init
+  script:
+    - terraform validate
+  allow_failure: false
+
+plan:
+  stage: plan
+  script:
+    - terraform plan
+  allow_failure: false
+
+apply:
+  stage: deploy
+  environment:
+    name: prod
+  script:
+    - terraform apply -auto-approve
+  dependencies:
+    - plan
+  allow_failure: false
+  when: manual
+  only:
+    - master
